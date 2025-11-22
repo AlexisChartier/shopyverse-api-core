@@ -1,4 +1,12 @@
-import { IsString, IsOptional, IsNumber, IsDateString, IsBoolean, IsEnum, Min } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsNumber,
+  IsDateString,
+  IsBoolean,
+  IsEnum,
+  Min,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export enum PromotionType {
@@ -7,7 +15,10 @@ export enum PromotionType {
 }
 
 export class CreatePromotionDto {
-  @ApiProperty({ example: 'SUMMER2025', description: 'Code promo unique (optionnel)' })
+  @ApiProperty({
+    example: 'SUMMER2025',
+    description: 'Code promo unique (optionnel)',
+  })
   @IsOptional()
   @IsString()
   code?: string;
@@ -16,7 +27,10 @@ export class CreatePromotionDto {
   @IsEnum(PromotionType)
   type: string;
 
-  @ApiProperty({ example: 20, description: 'Valeur de la réduction (ex: 20% ou 20€)' })
+  @ApiProperty({
+    example: 20,
+    description: 'Valeur de la réduction (ex: 20% ou 20€)',
+  })
   @IsNumber()
   @Min(0)
   value: number;

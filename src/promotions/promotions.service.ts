@@ -9,8 +9,13 @@ export class PromotionsService {
 
   async create(createPromotionDto: CreatePromotionDto) {
     // Validation simple : Date fin > Date début
-    if (new Date(createPromotionDto.endDate) <= new Date(createPromotionDto.startDate)) {
-      throw new BadRequestException('La date de fin doit être après la date de début');
+    if (
+      new Date(createPromotionDto.endDate) <=
+      new Date(createPromotionDto.startDate)
+    ) {
+      throw new BadRequestException(
+        'La date de fin doit être après la date de début',
+      );
     }
 
     return this.prisma.promotion.create({
@@ -30,9 +35,9 @@ export class PromotionsService {
   async findOne(id: string) {
     return this.prisma.promotion.findUnique({
       where: { id },
-      include: { 
-        products: { include: { product: true } } // Voir les produits associés
-      }
+      include: {
+        products: { include: { product: true } }, // Voir les produits associés
+      },
     });
   }
 

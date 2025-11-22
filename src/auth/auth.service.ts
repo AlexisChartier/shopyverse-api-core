@@ -13,7 +13,7 @@ export class AuthService {
 
   async login(loginDto: LoginDto) {
     const user = await this.usersService.findOneByEmail(loginDto.email);
-    
+
     // Vérification User + Mot de passe
     if (!user || !(await bcrypt.compare(loginDto.password, user.password))) {
       throw new UnauthorizedException('Email ou mot de passe incorrect');
@@ -21,7 +21,7 @@ export class AuthService {
 
     // Payload du token
     const payload = { sub: user.id, email: user.email, role: user.role?.name };
-    
+
     return {
       access_token: this.jwtService.sign(payload),
     };

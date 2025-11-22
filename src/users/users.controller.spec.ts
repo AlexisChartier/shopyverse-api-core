@@ -1,24 +1,37 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { UsersController } from './users.controller';
-import { UsersService } from './users.service';
-import { beforeEach, describe, it } from 'node:test';
+import { AuthService } from '../auth/auth.service';
+import { UsersService } from '../users/users.service';
+import { JwtService } from '@nestjs/jwt';
 
-describe('UsersController', () => {
-  let controller: UsersController;
+describe('AuthService', () => {
+  let service: AuthService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [UsersController],
-      providers: [UsersService],
+      providers: [
+        AuthService, // On teste le vrai service ici
+        // Mock de la dépendance UsersService
+        {
+          provide: UsersService,
+          useValue: {
+            findOneByEmail: jest.fn(),
+          },
+        },
+        // Mock de la dépendance JwtService
+        {
+          provide: JwtService,
+          useValue: {
+            sign: jest.fn(),
+            verify: jest.fn(),
+          },
+        },
+      ],
     }).compile();
 
-    controller = module.get<UsersController>(UsersController);
+    service = module.get<AuthService>(AuthService);
   });
 
   it('should be defined', () => {
-    expect(controller);
+    expect(service).toBeDefined();
   });
 });
-function expect(controller: UsersController) {
-  throw new Error('Function not implemented.');
-}
