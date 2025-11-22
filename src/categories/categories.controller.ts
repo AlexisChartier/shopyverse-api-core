@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
@@ -16,13 +24,17 @@ export class CategoriesController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Lister l\'arborescence des catégories (Racines + Enfants)' })
+  @ApiOperation({
+    summary: "Lister l'arborescence des catégories (Racines + Enfants)",
+  })
   findAll() {
     return this.categoriesService.findAll();
   }
 
   @Get('flat')
-  @ApiOperation({ summary: 'Liste plate de toutes les catégories (pour Selects)' })
+  @ApiOperation({
+    summary: 'Liste plate de toutes les catégories (pour Selects)',
+  })
   findAllFlat() {
     return this.categoriesService.findAllFlat();
   }
@@ -35,7 +47,10 @@ export class CategoriesController {
 
   @Patch(':id')
   @ApiOperation({ summary: 'Modifier une catégorie' })
-  update(@Param('id') id: string, @Body() updateCategoryDto: UpdateCategoryDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateCategoryDto: UpdateCategoryDto,
+  ) {
     return this.categoriesService.update(id, updateCategoryDto);
   }
 

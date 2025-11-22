@@ -8,7 +8,7 @@ export class CategoriesService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(createCategoryDto: CreateCategoryDto) {
-    // Si un parentId est fourni, on pourrait vérifier s'il existe, 
+    // Si un parentId est fourni, on pourrait vérifier s'il existe,
     // mais Prisma le fera et renverra une erreur Foreign Key si invalide.
     return this.prisma.category.create({
       data: createCategoryDto,
@@ -17,15 +17,15 @@ export class CategoriesService {
 
   async findAll() {
     // On récupère les catégories "racines" (sans parent) avec leurs enfants directs
-    // Pour une hiérarchie infinie, il faudrait une méthode récursive ou une structure 'closure table', 
+    // Pour une hiérarchie infinie, il faudrait une méthode récursive ou une structure 'closure table',
     // mais pour ce TP, 1 niveau de profondeur suffit souvent.
     return this.prisma.category.findMany({
       where: { parentId: null }, // Seulement les racines
-      include: { 
+      include: {
         children: {
-          include: { _count: { select: { products: true } } } // Bonus : on compte les produits
+          include: { _count: { select: { products: true } } }, // Bonus : on compte les produits
         },
-        _count: { select: { products: true } }
+        _count: { select: { products: true } },
       },
     });
   }
@@ -38,9 +38,9 @@ export class CategoriesService {
   async findOne(id: string) {
     const category = await this.prisma.category.findUnique({
       where: { id },
-      include: { 
+      include: {
         children: true, // On voit les sous-catégories
-        parent: true    // On voit le parent
+        parent: true, // On voit le parent
       },
     });
 

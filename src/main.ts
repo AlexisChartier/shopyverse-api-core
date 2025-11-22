@@ -8,17 +8,19 @@ async function bootstrap() {
   // src/main.ts
   const app = await NestFactory.create(AppModule);
   const config = new DocumentBuilder()
-  .setTitle('ShopyVerse API Core')
-  .setDescription('API de gestion catalogue et back-office')
-  .setVersion('1.0')
-  .addBearerAuth() // Pour le token JWT
-  .build();
-const document = SwaggerModule.createDocument(app, config);
-SwaggerModule.setup('api', app, document);
-app.useGlobalPipes(new ValidationPipe({ 
-  whitelist: true, // Retire les champs non déclarés dans le DTO (Sécurité)
-  forbidNonWhitelisted: true 
-}));
+    .setTitle('ShopyVerse API Core')
+    .setDescription('API de gestion catalogue et back-office')
+    .setVersion('1.0')
+    .addBearerAuth() // Pour le token JWT
+    .build();
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api', app, document);
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true, // Retire les champs non déclarés dans le DTO (Sécurité)
+      forbidNonWhitelisted: true,
+    }),
+  );
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();

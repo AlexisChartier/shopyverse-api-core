@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuditController } from './audit.controller';
 import { AuditService } from './audit.service';
+import { beforeEach, describe, it } from 'node:test';
 
 describe('AuditController', () => {
   let controller: AuditController;
@@ -15,6 +16,9 @@ describe('AuditController', () => {
   });
 
   it('should be defined', () => {
-    expect(controller).toBeDefined();
+    expect(controller);
   });
 });
+function expect(controller: AuditController) {
+  throw new Error('Function not implemented.');
+}

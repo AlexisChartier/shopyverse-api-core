@@ -1,26 +1,94 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
+import { PrismaService } from '../prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
-  create(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
+  constructor(private readonly prisma: PrismaService) {}
+
+  async create(createUserDto: CreateUserDto) {
+    // 1. Vérifier si l'email existe déjà
+    const existingUser = await this.prisma.user.findUnique({
+      where: { email: createUserDto.email },
+    });
+    if (existingUser) throw new ConflictException('Cet email est déjà utilisé');
+
+    // 2. Vérifier si le rôle existe
+    const role = await this.prisma.role.findUnique({
+      where: { id: createUserDto.roleId },
+    });
+    if (!role) throw new NotFoundException('Rôle introuvable');
+
+    // 3. Hacher le mot de passe
+    const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+
+    // 4. Créer l'utilisateur
+    const user = await this.prisma.user.create({
+      data: {
+        ...createUserDto,
+        password: hashedPassword,
+      },
+      // On sélectionne les champs à retourner (jamais le mot de passe !)
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: { select: { name: true } },
+        createdAt: true,
+      },
+    });
+
+    return user;
   }
 
-  findAll() {
-    return `This action returns all users`;
+  async findAll() {
+    return this.prisma.user.findMany({
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: { select: { name: true } },
+      },
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findOne(id: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+      include: { role: true },
+    });
+    if (!user) throw new NotFoundException(`Utilisateur #${id} introuvable`);
+    return user;
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  // Méthode spéciale pour le module Auth (a besoin du mot de passe pour vérifier)
+  async findOneByEmail(email: string) {
+    return this.prisma.user.findUnique({
+      where: { email },
+      include: { role: true },
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async update(id: string, updateUserDto: UpdateUserDto) {
+    if (updateUserDto.password) {
+      updateUserDto.password = await bcrypt.hash(updateUserDto.password, 10);
+    }
+    return this.prisma.user.update({
+      where: { id },
+      data: updateUserDto,
+      select: { id: true, email: true },
+    });
+  }
+
+  async remove(id: string) {
+    return this.prisma.user.delete({ where: { id } });
   }
 }

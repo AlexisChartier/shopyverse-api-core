@@ -6,10 +6,10 @@ export class CreateCategoryDto {
   @IsString()
   name: string;
 
-  @ApiProperty({ 
-    example: 'uuid-parent-123', 
+  @ApiProperty({
+    example: 'uuid-parent-123',
     description: 'ID de la catégorie parente (optionnel)',
-    required: false 
+    required: false,
   })
   @IsOptional()
   @IsUUID()
