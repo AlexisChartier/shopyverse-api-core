@@ -1,0 +1,83 @@
+name: API Core CI
+
+on:
+  push:
+    branches: [ "feat/*", "dev", "main" ]
+  pull_request:
+    branches: [ "dev", "main" ]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  quality-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      # 1. Validation du style de code
+      - name: Lint
+        run: npm run lint
+
+      # 2. Analyse de sécurité (Audit des dépendances)
+      - name: Security Audit
+        run: npm audit --audit-level=high
+
+      # 3. Tests Unitaires
+      - name: Run Tests
+        run: npm run test
+
+  build-and-push:
+    needs: quality-and-test
+    # On ne build l'image que sur les branches principales
+    if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # 4. Build & Push Docker
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+
+  # 5. Déclenchement automatique de la mise à jour de l'Infra
+  trigger-infra-update:
+    needs: build-and-push
+    if: github.ref == 'refs/heads/develop' # Uniquement sur Staging pour l'instant
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Infra Update
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.PAT_TOKEN }} # Token personnel requis ici
+          repository: alexischartier/shopyverse-infra
+          event-type: update-submodule
+          client-payload: '{"service": "shopyverse-api-core", "commit_sha": "${{ github.sha }}"}'
