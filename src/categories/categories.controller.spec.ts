@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CategoriesController } from './categories.controller';
 import { CategoriesService } from './categories.service';
+import { describe, beforeEach, it } from 'node:test';
 
 describe('CategoriesController', () => {
   let controller: CategoriesController;
@@ -15,6 +16,9 @@ describe('CategoriesController', () => {
   });
 
   it('should be defined', () => {
-    expect(controller).toBeDefined();
+    expect(controller);
   });
 });
+function expect(controller: CategoriesController) {
+  throw new Error('Function not implemented.');
+}

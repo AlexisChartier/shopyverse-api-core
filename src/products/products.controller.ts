@@ -1,5 +1,13 @@
-import { 
-  Controller, Get, Post, Body, Patch, Param, Delete, Query, ParseIntPipe 
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -22,7 +30,7 @@ export class ProductsController {
   @ApiOperation({ summary: 'Lister les produits (Pagination)' })
   findAll(
     @Query('page') page: string = '1',
-    @Query('limit') limit: string = '10'
+    @Query('limit') limit: string = '10',
   ) {
     return this.productsService.findAll(+page, +limit);
   }

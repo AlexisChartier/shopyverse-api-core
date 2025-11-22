@@ -1,5 +1,9 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
-import { PrismaService } from 'src/prisma.service';// Assurez-vous d'avoir créé ce service (généré par Nest ou manuellement)
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
+import { PrismaService } from 'src/prisma.service'; // Assurez-vous d'avoir créé ce service (généré par Nest ou manuellement)
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 
@@ -33,12 +37,12 @@ export class ProductsService {
 
   async findAll(page: number = 1, limit: number = 10) {
     const skip = (page - 1) * limit;
-    
+
     const [data, total] = await Promise.all([
       this.prisma.product.findMany({
         skip,
         take: limit,
-        include: { 
+        include: {
           category: true,
           medias: { take: 1 }, // Juste l'image principale pour la liste
           // On charge pas les variantes ici pour alléger, sauf si besoin du prix min/max
@@ -75,7 +79,7 @@ export class ProductsService {
     // Gestion complexe : Update partiel, ajout/suppression de variantes...
     // Pour ce MVP, on met à jour les champs simples du produit.
     // La gestion fine des variantes (ajout/suppr) se fait souvent via des endpoints dédiés ou une logique plus poussée ici.
-    
+
     const { variants, medias, ...simpleData } = updateProductDto;
 
     return this.prisma.product.update({

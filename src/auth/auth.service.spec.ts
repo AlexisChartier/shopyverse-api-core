@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthService } from './auth.service';
+import { beforeEach, describe, it } from 'node:test';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -13,6 +14,9 @@ describe('AuthService', () => {
   });
 
   it('should be defined', () => {
-    expect(service).toBeDefined();
+    expect(service);
   });
 });
+function expect(service: AuthService) {
+  throw new Error('Function not implemented.');
+}
