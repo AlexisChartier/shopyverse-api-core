@@ -1,4 +1,11 @@
-import { Controller, Post, Body, Get, UseGuards, Request } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Get,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { CreateUserDto } from '../users/dto/create-user.dto';
@@ -6,12 +13,16 @@ import { UsersService } from '../users/users.service';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from './jwt-auth.guard';
 
+interface RequestWithUser {
+  user: { userId: string; email: string; role: string };
+}
+
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
   constructor(
     private authService: AuthService,
-    private usersService: UsersService
+    private usersService: UsersService,
   ) {}
 
   @Post('login')
@@ -30,7 +41,7 @@ export class AuthController {
   @Get('profile')
   @ApiBearerAuth() // Affiche le cadenas dans Swagger
   @ApiOperation({ summary: 'Récupérer mes infos (Nécessite un Token valide)' })
-  getProfile(@Request() req) {
+  getProfile(@Request() req: RequestWithUser) {
     // req.user est rempli par le JwtStrategy après validation du token
     return req.user;
   }

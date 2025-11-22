@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+} from '@nestjs/common';
 import { PromotionsService } from './promotions.service';
 import { CreatePromotionDto } from './dto/create-promotion.dto';
 import { UpdatePromotionDto } from './dto/update-promotion.dto';
@@ -30,7 +39,7 @@ export class PromotionsController {
 
   @Get(':id')
   @Roles('Manager Catalogue', 'Admin')
-  @ApiOperation({ summary: 'Détails d\'une promotion' })
+  @ApiOperation({ summary: "Détails d'une promotion" })
   findOne(@Param('id') id: string) {
     return this.promotionsService.findOne(id);
   }
@@ -38,7 +47,10 @@ export class PromotionsController {
   @Patch(':id')
   @Roles('Manager Catalogue', 'Admin')
   @ApiOperation({ summary: 'Modifier une promotion' })
-  update(@Param('id') id: string, @Body() updatePromotionDto: UpdatePromotionDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updatePromotionDto: UpdatePromotionDto,
+  ) {
     return this.promotionsService.update(id, updatePromotionDto);
   }
 

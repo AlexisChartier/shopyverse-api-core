@@ -23,8 +23,8 @@ export class UsersController {
 
   @Post()
   @ApiOperation({ summary: 'Créer un nouvel utilisateur (Admin ou Manager)' })
-  @UseGuards(JwtAuthGuard, RolesGuard) 
-  @Roles('Admin') 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('Admin')
   create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
   }
