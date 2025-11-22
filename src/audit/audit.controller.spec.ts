@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuditController } from './audit.controller';
 import { AuditService } from './audit.service';
-import { beforeEach, describe, it } from 'node:test';
+import { PrismaService } from '../prisma.service';
 
 describe('AuditController', () => {
   let controller: AuditController;
@@ -9,16 +9,20 @@ describe('AuditController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AuditController],
-      providers: [AuditService],
+      providers: [
+        AuditService,
+        // On fournit le mock de Prisma car le Service en a besoin
+        {
+          provide: PrismaService,
+          useValue: {},
+        },
+      ],
     }).compile();
 
     controller = module.get<AuditController>(AuditController);
   });
 
   it('should be defined', () => {
-    expect(controller);
+    expect(controller).toBeDefined();
   });
 });
-function expect(controller: AuditController) {
-  throw new Error('Function not implemented.');
-}

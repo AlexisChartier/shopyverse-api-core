@@ -1,22 +1,22 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuditService } from './audit.service';
-import { beforeEach, describe, it } from 'node:test';
+import { PrismaService } from '../prisma.service';
 
 describe('AuditService', () => {
   let service: AuditService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [AuditService],
+      providers: [
+        AuditService,
+        { provide: PrismaService, useValue: {} }, // Mock Prisma
+      ],
     }).compile();
 
     service = module.get<AuditService>(AuditService);
   });
 
   it('should be defined', () => {
-    expect(service);
+    expect(service).toBeDefined();
   });
 });
-function expect(service: AuditService) {
-  throw new Error('Function not implemented.');
-}
