@@ -1,24 +1,22 @@
-import { PrismaClient } from '@prisma/client'; // Utilisez votre chemin généré
+// AVANT (Incorrect maintenant) :
+// import { PrismaClient } from '../src/generated/client';
+
+// APRÈS (Correct pour Prisma 5 standard) :
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('Seeding database...');
-
-  // Création des rôles
+  console.log('Start seeding...');
+  
+  // Création du rôle Admin
   const adminRole = await prisma.role.upsert({
     where: { name: 'Admin' },
     update: {},
     create: { name: 'Admin' },
   });
 
-  const managerRole = await prisma.role.upsert({
-    where: { name: 'Manager Catalogue' },
-    update: {},
-    create: { name: 'Manager Catalogue' },
-  });
-
-  console.log({ adminRole, managerRole });
+  console.log('Created role:', adminRole);
 }
 
 main()

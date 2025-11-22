@@ -12,10 +12,9 @@ import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
-// Importez vos Guards (créés à l'étape suivante "Auth", commentez-les si pas encore faits)
-// import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-// import { RolesGuard } from '../auth/roles.guard';
-// import { Roles } from '../auth/roles.decorator';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
 
 @ApiTags('Users')
 @Controller('users')
@@ -24,17 +23,16 @@ export class UsersController {
 
   @Post()
   @ApiOperation({ summary: 'Créer un nouvel utilisateur (Admin ou Manager)' })
-  // @UseGuards(JwtAuthGuard, RolesGuard) // Décommentez quand Auth est prêt
-  // @Roles('Admin') // Seul un Admin peut créer des comptes
+  @UseGuards(JwtAuthGuard, RolesGuard) 
+  @Roles('Admin') 
   create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
   }
 
   @Get()
   @ApiOperation({ summary: 'Lister tous les utilisateurs' })
-  // @ApiBearerAuth()
-  // @UseGuards(JwtAuthGuard, RolesGuard)
-  // @Roles('Admin')
+  //@ApiBearerAuth()
+  //@UseGuards(JwtAuthGuard, RolesGuard)
   findAll() {
     return this.usersService.findAll();
   }
