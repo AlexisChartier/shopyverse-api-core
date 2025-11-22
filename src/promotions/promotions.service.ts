@@ -1,26 +1,51 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
+import { PrismaService } from '../prisma.service';
 import { CreatePromotionDto } from './dto/create-promotion.dto';
 import { UpdatePromotionDto } from './dto/update-promotion.dto';
 
 @Injectable()
 export class PromotionsService {
-  create(createPromotionDto: CreatePromotionDto) {
-    return 'This action adds a new promotion';
+  constructor(private readonly prisma: PrismaService) {}
+
+  async create(createPromotionDto: CreatePromotionDto) {
+    // Validation simple : Date fin > Date début
+    if (new Date(createPromotionDto.endDate) <= new Date(createPromotionDto.startDate)) {
+      throw new BadRequestException('La date de fin doit être après la date de début');
+    }
+
+    return this.prisma.promotion.create({
+      data: {
+        ...createPromotionDto,
+        // Conversion explicite si besoin, mais @IsDateString gère le format ISO
+      },
+    });
   }
 
-  findAll() {
-    return `This action returns all promotions`;
+  async findAll() {
+    return this.prisma.promotion.findMany({
+      orderBy: { startDate: 'desc' },
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} promotion`;
+  async findOne(id: string) {
+    return this.prisma.promotion.findUnique({
+      where: { id },
+      include: { 
+        products: { include: { product: true } } // Voir les produits associés
+      }
+    });
   }
 
-  update(id: number, updatePromotionDto: UpdatePromotionDto) {
-    return `This action updates a #${id} promotion`;
+  async update(id: string, updatePromotionDto: UpdatePromotionDto) {
+    return this.prisma.promotion.update({
+      where: { id },
+      data: updatePromotionDto,
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} promotion`;
+  async remove(id: string) {
+    return this.prisma.promotion.delete({
+      where: { id },
+    });
   }
 }
