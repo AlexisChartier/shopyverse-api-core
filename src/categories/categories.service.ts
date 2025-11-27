@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service'; // Importez votre PrismaService Global
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
+import { AssignProductsDto } from './dto/assign-products.dto';
 
 @Injectable()
 export class CategoriesService {
@@ -62,5 +63,35 @@ export class CategoriesService {
     return this.prisma.category.delete({
       where: { id },
     });
+  }
+
+  async assignProducts(categoryId: string, dto: AssignProductsDto) {
+    const category = await this.prisma.category.findUnique({
+      where: { id: categoryId },
+    });
+
+    if (!category) {
+      throw new NotFoundException(`Catégorie #${categoryId} introuvable`);
+    }
+
+    const { productIds } = dto;
+
+    if (!productIds || productIds.length === 0) {
+      return { updatedCount: 0 };
+    }
+
+    const result = await this.prisma.product.updateMany({
+      where: {
+        id: { in: productIds },
+      },
+      data: {
+        categoryId,
+      },
+    });
+
+    return {
+      updatedCount: result.count,
+      categoryId,
+    };
   }
 }

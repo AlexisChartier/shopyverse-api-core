@@ -10,6 +10,7 @@ import {
 import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
+import { AssignProductsDto } from './dto/assign-products.dto';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 
 @ApiTags('Categories')
@@ -37,6 +38,17 @@ export class CategoriesController {
   })
   findAllFlat() {
     return this.categoriesService.findAllFlat();
+  }
+
+  @Post(':id/products')
+  @ApiOperation({
+    summary: 'Assigner plusieurs produits à une catégorie',
+  })
+  assignProducts(
+    @Param('id') id: string,
+    @Body() body: AssignProductsDto,
+  ) {
+    return this.categoriesService.assignProducts(id, body);
   }
 
   @Get(':id')
