@@ -2,6 +2,7 @@ import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { CreatePromotionDto } from './dto/create-promotion.dto';
 import { UpdatePromotionDto } from './dto/update-promotion.dto';
+import { AssignProductsToPromotionDto } from './dto/assign-products.dto';
 
 @Injectable()
 export class PromotionsService {
@@ -52,5 +53,38 @@ export class PromotionsService {
     return this.prisma.promotion.delete({
       where: { id },
     });
+  }
+    async assignProductsToPromotion(
+    promotionId: string,
+    dto: AssignProductsToPromotionDto,
+  ) {
+    // Vérifier que la promotion existe
+    const promotion = await this.prisma.promotion.findUnique({
+      where: { id: promotionId },
+    });
+
+    if (!promotion) {
+      throw new BadRequestException(`Promotion #${promotionId} introuvable`);
+    }
+
+    const { productIds } = dto;
+
+    if (!productIds || productIds.length === 0) {
+      throw new BadRequestException('Aucun productId fourni');
+    }
+
+    // On crée des lignes dans la table de liaison ProductPromotion
+    const result = await this.prisma.productPromotion.createMany({
+      data: productIds.map((productId) => ({
+        productId,
+        promotionId,
+      })),
+      skipDuplicates: true, // évite les erreurs si déjà lié
+    });
+
+    return {
+      promotionId,
+      linkedCount: result.count,
+    };
   }
 }

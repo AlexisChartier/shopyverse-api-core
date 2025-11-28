@@ -11,6 +11,7 @@ import {
 import { PromotionsService } from './promotions.service';
 import { CreatePromotionDto } from './dto/create-promotion.dto';
 import { UpdatePromotionDto } from './dto/update-promotion.dto';
+import { AssignProductsToPromotionDto } from './dto/assign-products.dto';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
@@ -29,6 +30,18 @@ export class PromotionsController {
   create(@Body() createPromotionDto: CreatePromotionDto) {
     return this.promotionsService.create(createPromotionDto);
   }
+
+    @Post(':id/products')
+    @Roles('Manager Catalogue', 'Admin')
+    @ApiOperation({
+      summary: 'Assigner plusieurs produits à une promotion',
+    })
+    assignProducts(
+      @Param('id') id: string,
+      @Body() body: AssignProductsToPromotionDto,
+    ) {
+      return this.promotionsService.assignProductsToPromotion(id, body);
+    }
 
   @Get()
   @Roles('Manager Catalogue', 'Admin')
