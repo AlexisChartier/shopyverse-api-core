@@ -10,7 +10,7 @@ import {
   Min,
   ValidateNested,
 } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger'; // Pour la doc auto
+import { ApiProperty } from '@nestjs/swagger';
 
 // --- Sous-DTO pour les Variantes ---
 export class CreateVariantDto {
@@ -39,10 +39,16 @@ export class CreateMediaDto {
   @IsString()
   url: string;
 
-  @ApiProperty({ example: 'Vue de face' })
+  @ApiProperty({ example: 'Vue de face', required: false })
   @IsString()
   @IsOptional()
   altText?: string;
+
+  @ApiProperty({ example: 0, required: false })
+  @IsInt()
+  @Min(0)
+  @IsOptional()
+  sortOrder?: number;
 }
 
 // --- DTO Principal Produit ---
@@ -68,7 +74,6 @@ export class CreateProductDto {
   @IsString()
   categoryId: string;
 
-  // Validation imbriquée pour les tableaux
   @ApiProperty({ type: [CreateVariantDto] })
   @IsArray()
   @ValidateNested({ each: true })

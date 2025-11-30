@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ProductsService } from './products.service';
-import { PrismaService } from '../prisma.service';
+import { PrismaService } from '../prisma.service'; // ou ../prisma/prisma.service selon ton arbo
 
 describe('ProductsService', () => {
   let service: ProductsService;
@@ -11,7 +11,7 @@ describe('ProductsService', () => {
         ProductsService,
         {
           provide: PrismaService,
-          useValue: {},
+          useValue: {}, // mock vide pour l’instant
         },
       ],
     }).compile();
