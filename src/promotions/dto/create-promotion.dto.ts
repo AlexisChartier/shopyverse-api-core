@@ -25,7 +25,7 @@ export class CreatePromotionDto {
 
   @ApiProperty({ enum: PromotionType, example: PromotionType.PERCENTAGE })
   @IsEnum(PromotionType)
-  type: string;
+  type: PromotionType;
 
   @ApiProperty({
     example: 20,
