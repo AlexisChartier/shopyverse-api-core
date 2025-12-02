@@ -19,11 +19,13 @@ export class UsersService {
     });
     if (existingUser) throw new ConflictException('Cet email est déjà utilisé');
 
-    // 2. Vérifier si le rôle existe
     const role = await this.prisma.role.findUnique({
-      where: { id: createUserDto.roleId },
+      where: { name: 'User' },
     });
-    if (!role) throw new NotFoundException('Rôle introuvable');
+
+    if (!role) {
+      throw new NotFoundException('Le rôle "user" est introuvable dans la base.');
+    }
 
     // 3. Hacher le mot de passe
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
@@ -31,8 +33,11 @@ export class UsersService {
     // 4. Créer l'utilisateur
     const user = await this.prisma.user.create({
       data: {
-        ...createUserDto,
+        email: createUserDto.email,
         password: hashedPassword,
+        firstName: createUserDto.firstName,
+        lastName: createUserDto.lastName,
+        roleId: role.id,
       },
       // On sélectionne les champs à retourner (jamais le mot de passe !)
       select: {
