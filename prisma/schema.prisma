@@ -55,6 +55,7 @@ model Product {
   variants    Variant[]
   medias      Media[]
   promotions  ProductPromotion[]
+  orderItems  OrderItem[]
 }
 
 // [cite: 190]
@@ -78,6 +79,64 @@ model Media {
   
   productId String
   product   Product @relation(fields: [productId], references: [id])
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PAID
+  UNPAID
+  REFUNDED
+}
+
+model Customer {
+  id        String   @id @default(uuid())
+  firstName String
+  lastName  String
+  email     String   @unique
+  phone     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  orders    Order[]
+}
+
+model Order {
+  id             String         @id @default(uuid())
+  orderNumber    String         @unique
+  status         OrderStatus    @default(PENDING)
+  paymentStatus  PaymentStatus  @default(PAID)
+  subtotal       Decimal        @default(0)
+  tax            Decimal        @default(0)
+  shipping       Decimal        @default(0)
+  total          Decimal        @default(0)
+  shippingAddress Json
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id])
+
+  items OrderItem[]
+}
+
+model OrderItem {
+  id          String   @id @default(uuid())
+  productId   String?
+  productName String
+  quantity    Int
+  unitPrice   Decimal
+  imageUrl    String?
+
+  orderId String
+  order   Order    @relation(fields: [orderId], references: [id])
+  product Product? @relation(fields: [productId], references: [id])
 }
 
 // --- 3. Promotions ---

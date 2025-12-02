@@ -9,6 +9,8 @@ import { AuditModule } from './audit/audit.module';
 import { MetricsModule } from './metrics/metrics.module';
 import { PrismaModule } from './prisma.module';
 import { UsersModule } from './users/users.module';
+import { CustomersModule } from './customers/customers.module';
+import { OrdersModule } from './orders/orders.module';
 
 @Module({
   imports: [
@@ -20,6 +22,8 @@ import { UsersModule } from './users/users.module';
     MetricsModule,
     PrismaModule,
     UsersModule,
+    CustomersModule,
+    OrdersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
