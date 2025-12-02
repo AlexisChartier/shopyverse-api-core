@@ -31,17 +31,17 @@ export class PromotionsController {
     return this.promotionsService.create(createPromotionDto);
   }
 
-    @Post(':id/products')
-    @Roles('Manager Catalogue', 'Admin')
-    @ApiOperation({
-      summary: 'Assigner plusieurs produits à une promotion',
-    })
-    assignProducts(
-      @Param('id') id: string,
-      @Body() body: AssignProductsToPromotionDto,
-    ) {
-      return this.promotionsService.assignProductsToPromotion(id, body);
-    }
+  @Post(':id/products')
+  @Roles('Manager Catalogue', 'Admin')
+  @ApiOperation({
+    summary: 'Assigner plusieurs produits à une promotion',
+  })
+  assignProducts(
+    @Param('id') id: string,
+    @Body() body: AssignProductsToPromotionDto,
+  ) {
+    return this.promotionsService.assignProductsToPromotion(id, body);
+  }
 
   @Get()
   @Roles('Manager Catalogue', 'Admin')

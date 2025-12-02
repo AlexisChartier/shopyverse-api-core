@@ -3,7 +3,6 @@ import { OrderStatus, PaymentStatus } from '@prisma/client';
 import {
   IsArray,
   IsEnum,
-  IsNotEmpty,
   IsNumber,
   IsOptional,
   IsPositive,

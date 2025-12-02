@@ -13,5 +13,4 @@ export class CreateAuthDto {
 
   @IsString()
   lastName: string;
-
 }

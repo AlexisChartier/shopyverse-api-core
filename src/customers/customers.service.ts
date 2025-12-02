@@ -15,8 +15,16 @@ type CustomerWithStats = Prisma.CustomerGetPayload<{
 export class CustomersService {
   constructor(private readonly prisma: PrismaService) {}
 
-  create(createCustomerDto: CreateCustomerDto) {
-    return this.prisma.customer.create({ data: createCustomerDto });
+  async create(createCustomerDto: CreateCustomerDto) {
+    const customer = await this.prisma.customer.create({
+      data: createCustomerDto,
+      include: {
+        orders: { select: { total: true } },
+        _count: { select: { orders: true } },
+      },
+    });
+
+    return this.mapCustomer(customer);
   }
 
   async findAll() {
@@ -47,11 +55,17 @@ export class CustomersService {
     return this.mapCustomer(customer);
   }
 
-  update(id: string, updateCustomerDto: UpdateCustomerDto) {
-    return this.prisma.customer.update({
+  async update(id: string, updateCustomerDto: UpdateCustomerDto) {
+    const customer = await this.prisma.customer.update({
       where: { id },
       data: updateCustomerDto,
+      include: {
+        orders: { select: { total: true } },
+        _count: { select: { orders: true } },
+      },
     });
+
+    return this.mapCustomer(customer);
   }
 
   remove(id: string) {
@@ -59,8 +73,11 @@ export class CustomersService {
   }
 
   private mapCustomer(customer: CustomerWithStats) {
-    const totalSpent = customer.orders.reduce((sum, order) => sum + Number(order.total ?? 0), 0);
     const { orders, _count, ...rest } = customer;
+    const totalSpent = orders.reduce(
+      (sum, order) => sum + Number(order.total ?? 0),
+      0,
+    );
 
     return {
       ...rest,

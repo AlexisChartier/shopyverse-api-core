@@ -24,7 +24,9 @@ export class UsersService {
     });
 
     if (!role) {
-      throw new NotFoundException('Le rôle "user" est introuvable dans la base.');
+      throw new NotFoundException(
+        'Le rôle "user" est introuvable dans la base.',
+      );
     }
 
     // 3. Hacher le mot de passe

@@ -23,10 +23,12 @@ export class OrdersService {
   async create(dto: CreateOrderDto) {
     const { items, shippingAddress, ...orderData } = dto;
 
+    const shippingAddressJson = shippingAddress as unknown as Prisma.InputJsonValue;
+
     const order = await this.prisma.order.create({
       data: {
         ...orderData,
-        shippingAddress,
+        shippingAddress: shippingAddressJson,
         items: {
           create: items.map((item) => ({
             productId: item.productId,
@@ -98,11 +100,13 @@ export class OrdersService {
         throw new NotFoundException(`Order ${id} not found`);
       }
 
+      const shippingAddressJson = shippingAddress as unknown as Prisma.InputJsonValue;
+
       await tx.order.update({
         where: { id },
         data: {
           ...orderData,
-          ...(shippingAddress && { shippingAddress }),
+          ...(shippingAddress && { shippingAddress: shippingAddressJson }),
         },
       });
 
@@ -154,7 +158,10 @@ export class OrdersService {
     }));
 
     const { orders, _count, ...customerData } = order.customer;
-    const totalSpent = orders.reduce((sum, curr) => sum + Number(curr.total ?? 0), 0);
+    const totalSpent = orders.reduce(
+      (sum, curr) => sum + Number(curr.total ?? 0),
+      0,
+    );
 
     return {
       ...order,
