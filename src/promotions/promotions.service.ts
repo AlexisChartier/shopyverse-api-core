@@ -54,7 +54,7 @@ export class PromotionsService {
       where: { id },
     });
   }
-    async assignProductsToPromotion(
+  async assignProductsToPromotion(
     promotionId: string,
     dto: AssignProductsToPromotionDto,
   ) {
