@@ -175,6 +175,63 @@ model ABMetric {
   createdAt    DateTime @default(now())
 }
 
+model CartSession {
+  id        String      @id @default(uuid())
+  sessionId String      @unique
+  currency  String      @default("EUR")
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  items     CartItem[]
+}
+
+model CartItem {
+  id        String      @id @default(uuid())
+  productId String
+  quantity  Int         @default(1)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  cartId    String
+  cart      CartSession @relation(fields: [cartId], references: [id], onDelete: Cascade)
+}
+
+model StorefrontMetricEvent {
+  id        String   @id @default(uuid())
+  name      String
+  source    String
+  visitorId String?
+  sessionId String?
+  payload   Json?
+  occurredAt DateTime @default(now())
+  createdAt DateTime @default(now())
+}
+
+model StoreSetting {
+  id                   String   @id @default("default")
+  currency             String   @default("EUR")
+  taxRate              Float    @default(20)
+  shippingRate         Float    @default(0)
+  allowedPaymentMethods String[] @default(["card", "paypal"])
+  emailNotifications   Boolean  @default(true)
+  orderPrefix          String   @default("ORD")
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+model ThemeSetting {
+  id               String   @id @default("default")
+  primaryColor     String   @default("#030213")
+  secondaryColor   String   @default("#6366f1")
+  accentColor      String   @default("#f59e0b")
+  fontFamily       String   @default("Inter")
+  logo             String?
+  storeName        String   @default("Ma Boutique")
+  storeDescription String   @default("Découvrez nos produits de qualité supérieure")
+  headerLayout     String   @default("centered")
+  footerText       String   @default("© 2024 Ma Boutique. Tous droits réservés.")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
 enum OrderStatus {
   PENDING
   PROCESSING
