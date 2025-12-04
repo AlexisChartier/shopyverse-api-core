@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ProductsService } from './products.service';
-import { PrismaService } from '../prisma.service'; // ou ../prisma/prisma.service selon ton arbo
+import { PrismaService } from '../prisma.service';
+import { RecommendationsService } from './recommendations.service';
 
 describe('ProductsService', () => {
   let service: ProductsService;
@@ -9,9 +10,12 @@ describe('ProductsService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ProductsService,
+        PrismaService,
         {
-          provide: PrismaService,
-          useValue: {}, // mock vide pour l’instant
+          provide: RecommendationsService,
+          useValue: {
+            getRecommendations: jest.fn().mockResolvedValue([]),
+          },
         },
       ],
     }).compile();
