@@ -179,9 +179,13 @@ export class PagesService {
 
   private parseProductIds(productIds: Prisma.JsonValue | null) {
     if (Array.isArray(productIds)) {
-      return productIds.map((value) => String(value));
+    return productIds.map((value) => {
+      if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+        return String(value);
+      }
+      return JSON.stringify(value);
+    });
     }
-
     return undefined;
   }
 }
