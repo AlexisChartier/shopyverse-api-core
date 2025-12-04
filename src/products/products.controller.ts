@@ -34,6 +34,12 @@ export class ProductsController {
     return this.productsService.findAll(+page, +limit);
   }
 
+  @Get(':id/recommendations')
+  @ApiOperation({ summary: 'Récupérer les recommandations produit (ordre préservé)' })
+  getRecommendations(@Param('id') id: string) {
+    return this.productsService.getRecommendations(id);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Récupérer un produit complet par ID' })
   findOne(@Param('id') id: string) {

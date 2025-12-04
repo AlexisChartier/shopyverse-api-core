@@ -2,10 +2,14 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { RecommendationsService } from './recommendations.service';
 
 @Injectable()
 export class ProductsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly recommendationsService: RecommendationsService,
+  ) {}
 
   /**
    * POST /products
@@ -203,5 +207,9 @@ export class ProductsService {
         where: { id },
       });
     });
+  }
+
+  async getRecommendations(id: string) {
+    return this.recommendationsService.getRecommendations(id);
   }
 }
