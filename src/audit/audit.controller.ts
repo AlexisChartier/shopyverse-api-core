@@ -6,6 +6,9 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
+  DefaultValuePipe,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { AuditService } from './audit.service';
 import { CreateAuditDto } from './dto/create-audit.dto';
@@ -21,22 +24,27 @@ export class AuditController {
   }
 
   @Get()
-  findAll() {
-    return this.auditService.findAll();
+  findAll(
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(100), ParseIntPipe) limit: number,
+    @Query('action') action?: string,
+    @Query('userId') userId?: string,
+  ) {
+    return this.auditService.findAll({ page, limit, action, userId });
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.auditService.findOne(+id);
+    return this.auditService.findOne(id);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateAuditDto: UpdateAuditDto) {
-    return this.auditService.update(+id, updateAuditDto);
+    return this.auditService.update(id, updateAuditDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.auditService.remove(+id);
+    return this.auditService.remove(id);
   }
 }

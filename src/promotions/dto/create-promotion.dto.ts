@@ -47,4 +47,14 @@ export class CreatePromotionDto {
   @IsOptional()
   @IsBoolean()
   isActive?: boolean;
+
+  @ApiProperty({
+    example: 50,
+    description: 'Montant minimum de commande pour appliquer la promo',
+    required: false,
+  })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  minOrderValue?: number;
 }

@@ -4,6 +4,7 @@ import { PrismaService } from '../prisma.service';
 import { CreatePageDto } from './dto/create-page.dto';
 import { UpdatePageDto } from './dto/update-page.dto';
 import { CreateSectionDto } from './dto/create-section.dto';
+import { AuditService } from '../audit/audit.service';
 
 const defaultInclude = {
   sections: {
@@ -19,9 +20,12 @@ type PageWithSections = Prisma.CustomPageGetPayload<{
 
 @Injectable()
 export class PagesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly auditService: AuditService,
+  ) {}
 
-  async create(dto: CreatePageDto) {
+  async create(dto: CreatePageDto, userId?: string) {
     const page = await this.prisma.customPage.create({
       data: {
         name: dto.name,
@@ -40,6 +44,13 @@ export class PagesService {
       },
       include: defaultInclude,
     });
+
+    if (userId) {
+      await this.auditService.log('page.create', userId, {
+        pageId: page.id,
+        slug: page.slug,
+      });
+    }
 
     return this.mapPage(page);
   }
@@ -79,7 +90,7 @@ export class PagesService {
     return this.mapPage(page);
   }
 
-  async update(id: string, dto: UpdatePageDto) {
+  async update(id: string, dto: UpdatePageDto, userId?: string) {
     const exists = await this.prisma.customPage.findUnique({ where: { id } });
 
     if (!exists) {
@@ -115,10 +126,17 @@ export class PagesService {
       include: defaultInclude,
     });
 
+    if (userId) {
+      await this.auditService.log('page.update', userId, {
+        pageId: id,
+        isPublished: dto.isPublished,
+      });
+    }
+
     return this.mapPage(updated as PageWithSections);
   }
 
-  async remove(id: string) {
+  async remove(id: string, userId?: string) {
     const page = await this.prisma.customPage.findUnique({ where: { id } });
 
     if (!page) {
@@ -129,6 +147,12 @@ export class PagesService {
       this.prisma.pageSection.deleteMany({ where: { pageId: id } }),
       this.prisma.customPage.delete({ where: { id } }),
     ]);
+
+    if (userId) {
+      await this.auditService.log('page.delete', userId, {
+        pageId: id,
+      });
+    }
 
     return { deleted: true };
   }
@@ -179,12 +203,16 @@ export class PagesService {
 
   private parseProductIds(productIds: Prisma.JsonValue | null) {
     if (Array.isArray(productIds)) {
-    return productIds.map((value) => {
-      if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
-        return String(value);
-      }
-      return JSON.stringify(value);
-    });
+      return productIds.map((value) => {
+        if (
+          typeof value === 'string' ||
+          typeof value === 'number' ||
+          typeof value === 'boolean'
+        ) {
+          return String(value);
+        }
+        return JSON.stringify(value);
+      });
     }
     return undefined;
   }

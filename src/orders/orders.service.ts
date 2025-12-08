@@ -23,7 +23,8 @@ export class OrdersService {
   async create(dto: CreateOrderDto) {
     const { items, shippingAddress, ...orderData } = dto;
 
-    const shippingAddressJson = shippingAddress as unknown as Prisma.InputJsonValue;
+    const shippingAddressJson =
+      shippingAddress as unknown as Prisma.InputJsonValue;
 
     const order = await this.prisma.order.create({
       data: {
@@ -53,21 +54,37 @@ export class OrdersService {
     return this.mapOrder(order);
   }
 
-  async findAll() {
-    const orders = await this.prisma.order.findMany({
-      orderBy: { createdAt: 'desc' },
-      include: {
-        items: true,
-        customer: {
-          include: {
-            orders: { select: { total: true } },
-            _count: { select: { orders: true } },
+  async findAll(page = 1, limit = 20) {
+    const take = Math.min(Math.max(limit, 1), 100);
+    const skip = (Math.max(page, 1) - 1) * take;
+
+    const [orders, total] = await this.prisma.$transaction([
+      this.prisma.order.findMany({
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take,
+        include: {
+          items: true,
+          customer: {
+            include: {
+              orders: { select: { total: true } },
+              _count: { select: { orders: true } },
+            },
           },
         },
-      },
-    });
+      }),
+      this.prisma.order.count(),
+    ]);
 
-    return orders.map((order) => this.mapOrder(order));
+    return {
+      data: orders.map((order) => this.mapOrder(order)),
+      meta: {
+        page,
+        limit: take,
+        total,
+        pageCount: Math.ceil(total / take) || 1,
+      },
+    };
   }
 
   async findOne(id: string) {
@@ -100,7 +117,8 @@ export class OrdersService {
         throw new NotFoundException(`Order ${id} not found`);
       }
 
-      const shippingAddressJson = shippingAddress as unknown as Prisma.InputJsonValue;
+      const shippingAddressJson =
+        shippingAddress as unknown as Prisma.InputJsonValue;
 
       await tx.order.update({
         where: { id },

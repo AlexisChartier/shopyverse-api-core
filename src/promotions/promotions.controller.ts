@@ -7,7 +7,9 @@ import {
   Param,
   Delete,
   UseGuards,
+  Req,
 } from '@nestjs/common';
+import type { Request } from 'express';
 import { PromotionsService } from './promotions.service';
 import { CreatePromotionDto } from './dto/create-promotion.dto';
 import { UpdatePromotionDto } from './dto/update-promotion.dto';
@@ -27,8 +29,13 @@ export class PromotionsController {
   @Post()
   @Roles('Manager Catalogue', 'Admin') // Rôles autorisés
   @ApiOperation({ summary: 'Créer une nouvelle promotion' })
-  create(@Body() createPromotionDto: CreatePromotionDto) {
-    return this.promotionsService.create(createPromotionDto);
+  create(
+    @Body() createPromotionDto: CreatePromotionDto,
+    @Req() req?: Request,
+  ) {
+    const userId =
+      (req as (Request & { user?: { userId?: string } }) | undefined)?.user?.userId;
+    return this.promotionsService.create(createPromotionDto, userId);
   }
 
   @Post(':id/products')
@@ -39,8 +46,11 @@ export class PromotionsController {
   assignProducts(
     @Param('id') id: string,
     @Body() body: AssignProductsToPromotionDto,
+    @Req() req?: Request,
   ) {
-    return this.promotionsService.assignProductsToPromotion(id, body);
+    const userId =
+      (req as (Request & { user?: { userId?: string } }) | undefined)?.user?.userId;
+    return this.promotionsService.assignProductsToPromotion(id, body, userId);
   }
 
   @Get()
@@ -63,14 +73,19 @@ export class PromotionsController {
   update(
     @Param('id') id: string,
     @Body() updatePromotionDto: UpdatePromotionDto,
+    @Req() req?: Request,
   ) {
-    return this.promotionsService.update(id, updatePromotionDto);
+    const userId =
+      (req as (Request & { user?: { userId?: string } }) | undefined)?.user?.userId;
+    return this.promotionsService.update(id, updatePromotionDto, userId);
   }
 
   @Delete(':id')
   @Roles('Admin') // Suppression réservée aux Admins (exemple de granularité)
   @ApiOperation({ summary: 'Supprimer une promotion' })
-  remove(@Param('id') id: string) {
-    return this.promotionsService.remove(id);
+  remove(@Param('id') id: string, @Req() req?: Request) {
+    const userId =
+      (req as (Request & { user?: { userId?: string } }) | undefined)?.user?.userId;
+    return this.promotionsService.remove(id, userId);
   }
 }

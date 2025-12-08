@@ -31,6 +31,12 @@ export class CreateVariantDto {
   @IsInt()
   @Min(0)
   stockQty: number;
+
+  @ApiProperty({ example: 5, required: false })
+  @IsInt()
+  @Min(0)
+  @IsOptional()
+  alertThreshold?: number;
 }
 
 // --- Sous-DTO pour les Médias ---
@@ -60,6 +66,29 @@ export class CreateProductDto {
   @ApiProperty({ example: 'Un t-shirt en coton bio...' })
   @IsString()
   description: string;
+
+  @ApiProperty({ example: 'T-Shirt éco ShopyVerse', required: false })
+  @IsString()
+  @IsOptional()
+  metaTitle?: string;
+
+  @ApiProperty({ example: 'T-shirt coton bio, coupe unisexe', required: false })
+  @IsString()
+  @IsOptional()
+  metaDescription?: string;
+
+  @ApiProperty({ example: 'tshirt, coton bio, unisexe', required: false })
+  @IsString()
+  @IsOptional()
+  metaKeywords?: string;
+
+  @ApiProperty({
+    example: 'https://cdn.shopyverse.com/img1.jpg',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  ogImage?: string;
 
   @ApiProperty({ example: 't-shirt-shopyverse-v1' })
   @IsString()

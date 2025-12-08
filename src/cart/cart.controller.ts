@@ -1,4 +1,13 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Post, Put } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  Param,
+  Post,
+  Put,
+} from '@nestjs/common';
 import { CartService } from './cart.service';
 import { CreateCartSessionDto } from './dto/create-cart-session.dto';
 import { UpdateCartDto } from './dto/update-cart.dto';
@@ -16,7 +25,9 @@ export class CartController {
   }
 
   @Get(':sessionId')
-  @ApiOperation({ summary: 'Récupérer un panier via son identifiant de session' })
+  @ApiOperation({
+    summary: 'Récupérer un panier via son identifiant de session',
+  })
   findOne(@Param('sessionId') sessionId: string) {
     return this.cartService.findBySessionId(sessionId);
   }

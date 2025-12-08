@@ -1,4 +1,11 @@
-import { PartialType } from '@nestjs/swagger';
-import { CreateAuditDto } from './create-audit.dto';
+import { IsOptional, IsString } from 'class-validator';
+import type { Prisma } from '@prisma/client';
 
-export class UpdateAuditDto extends PartialType(CreateAuditDto) {}
+export class UpdateAuditDto {
+	@IsOptional()
+	@IsString()
+	action?: string;
+
+	@IsOptional()
+	details?: Prisma.InputJsonValue | Prisma.NullableJsonNullValueInput;
+}

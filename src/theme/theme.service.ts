@@ -10,7 +10,9 @@ export class ThemeService {
   constructor(private readonly prisma: PrismaService) {}
 
   async getTheme() {
-    const theme = await this.prisma.themeSetting.findUnique({ where: { id: THEME_SETTINGS_ID } });
+    const theme = await this.prisma.themeSetting.findUnique({
+      where: { id: THEME_SETTINGS_ID },
+    });
     if (theme) {
       return theme;
     }
@@ -62,9 +64,11 @@ export class ThemeService {
         logo: dto.logo,
         storeName: dto.storeName ?? 'Ma Boutique',
         storeDescription:
-          dto.storeDescription ?? 'Découvrez nos produits de qualité supérieure',
+          dto.storeDescription ??
+          'Découvrez nos produits de qualité supérieure',
         headerLayout: dto.headerLayout ?? 'centered',
-        footerText: dto.footerText ?? '© 2024 Ma Boutique. Tous droits réservés.',
+        footerText:
+          dto.footerText ?? '© 2024 Ma Boutique. Tous droits réservés.',
       },
       update: payload,
     });

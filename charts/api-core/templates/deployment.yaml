@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "api-core.fullname" . }}
+  labels:
+    app: {{ include "api-core.name" . }}
+    chart: {{ include "api-core.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+  annotations:
+    {{- range $key, $value := .Values.rollout.annotations }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "api-core.name" . }}
+      release: {{ .Release.Name }}
+  strategy:
+    type: {{ .Values.rollout.strategy | default "RollingUpdate" }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "api-core.name" . }}
+        release: {{ .Release.Name }}
+      annotations:
+        {{- range $key, $value := .Values.podAnnotations }}
+        {{ $key }}: {{ $value | quote }}
+        {{- end }}
+    spec:
+      containers:
+        - name: api-core
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+          env:
+            {{- range $key, $value := .Values.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+          envFrom:
+            - secretRef:
+                name: {{ .Values.secrets.existingSecret }}
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+          livenessProbe:
+{{ toYaml .Values.livenessProbe | indent 12 }}
+          readinessProbe:
+{{ toYaml .Values.readinessProbe | indent 12 }}
+      nodeSelector:
+{{ toYaml .Values.nodeSelector | indent 8 }}
+      tolerations:
+{{ toYaml .Values.tolerations | indent 8 }}
+      affinity:
+{{ toYaml .Values.affinity | indent 8 }}

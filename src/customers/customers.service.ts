@@ -27,16 +27,32 @@ export class CustomersService {
     return this.mapCustomer(customer);
   }
 
-  async findAll() {
-    const customers = await this.prisma.customer.findMany({
-      orderBy: { createdAt: 'desc' },
-      include: {
-        orders: { select: { total: true } },
-        _count: { select: { orders: true } },
-      },
-    });
+  async findAll(page = 1, limit = 50) {
+    const take = Math.min(Math.max(limit, 1), 100);
+    const skip = (Math.max(page, 1) - 1) * take;
 
-    return customers.map((customer) => this.mapCustomer(customer));
+    const [customers, total] = await this.prisma.$transaction([
+      this.prisma.customer.findMany({
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take,
+        include: {
+          orders: { select: { total: true } },
+          _count: { select: { orders: true } },
+        },
+      }),
+      this.prisma.customer.count(),
+    ]);
+
+    return {
+      data: customers.map((customer) => this.mapCustomer(customer)),
+      meta: {
+        page,
+        limit: take,
+        total,
+        pageCount: Math.ceil(total / take) || 1,
+      },
+    };
   }
 
   async findOne(id: string) {

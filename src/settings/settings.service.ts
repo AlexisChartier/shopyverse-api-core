@@ -10,7 +10,9 @@ export class SettingsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async getSettings() {
-    const settings = await this.prisma.storeSetting.findUnique({ where: { id: SETTINGS_ID } });
+    const settings = await this.prisma.storeSetting.findUnique({
+      where: { id: SETTINGS_ID },
+    });
     if (settings) {
       return settings;
     }
@@ -35,7 +37,9 @@ export class SettingsService {
       payload.shippingRate = dto.shippingRate;
     }
     if (dto.allowedPaymentMethods !== undefined) {
-      payload.allowedPaymentMethods = dto.allowedPaymentMethods.filter((method) => method.length > 0);
+      payload.allowedPaymentMethods = dto.allowedPaymentMethods.filter(
+        (method) => method.length > 0,
+      );
     }
     if (dto.emailNotifications !== undefined) {
       payload.emailNotifications = dto.emailNotifications;

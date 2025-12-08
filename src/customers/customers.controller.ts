@@ -6,6 +6,9 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
+  DefaultValuePipe,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CustomersService } from './customers.service';
@@ -25,8 +28,11 @@ export class CustomersController {
 
   @Get()
   @ApiOperation({ summary: 'Lister tous les clients avec statistiques' })
-  findAll() {
-    return this.customersService.findAll();
+  findAll(
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(50), ParseIntPipe) limit: number,
+  ) {
+    return this.customersService.findAll(page, limit);
   }
 
   @Get(':id')

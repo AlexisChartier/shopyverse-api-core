@@ -15,6 +15,8 @@ import { PagesModule } from './pages/pages.module';
 import { CartModule } from './cart/cart.module';
 import { SettingsModule } from './settings/settings.module';
 import { ThemeModule } from './theme/theme.module';
+import { ExperimentsModule } from './experiments/experiments.module';
+import { CheckoutModule } from './checkout/checkout.module';
 
 @Module({
   imports: [
@@ -32,6 +34,8 @@ import { ThemeModule } from './theme/theme.module';
     CartModule,
     SettingsModule,
     ThemeModule,
+    ExperimentsModule,
+    CheckoutModule,
   ],
   controllers: [AppController],
   providers: [AppService],

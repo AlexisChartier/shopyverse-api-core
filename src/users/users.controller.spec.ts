@@ -1,37 +1,38 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { AuthService } from '../auth/auth.service';
-import { UsersService } from '../users/users.service';
-import { JwtService } from '@nestjs/jwt';
+import { UsersController } from './users.controller';
+import { UsersService } from './users.service';
 
-describe('AuthService', () => {
-  let service: AuthService;
+describe('UsersController', () => {
+  let controller: UsersController;
+  const service = {
+    create: jest.fn(),
+    findAll: jest.fn(),
+    findOne: jest.fn(),
+    update: jest.fn(),
+    remove: jest.fn(),
+  } as unknown as jest.Mocked<UsersService>;
 
   beforeEach(async () => {
+    jest.clearAllMocks();
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        AuthService, // On teste le vrai service ici
-        // Mock de la dépendance UsersService
-        {
-          provide: UsersService,
-          useValue: {
-            findOneByEmail: jest.fn(),
-          },
-        },
-        // Mock de la dépendance JwtService
-        {
-          provide: JwtService,
-          useValue: {
-            sign: jest.fn(),
-            verify: jest.fn(),
-          },
-        },
-      ],
+      controllers: [UsersController],
+      providers: [{ provide: UsersService, useValue: service }],
     }).compile();
 
-    service = module.get<AuthService>(AuthService);
+    controller = module.get<UsersController>(UsersController);
   });
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
+  it('delegates to service', async () => {
+    service.create.mockResolvedValue('created' as any);
+    service.findAll.mockResolvedValue('all' as any);
+    service.findOne.mockResolvedValue('one' as any);
+    service.update.mockResolvedValue('updated' as any);
+    service.remove.mockResolvedValue('deleted' as any);
+
+    expect(await controller.create({} as any)).toBe('created');
+    expect(await controller.findAll()).toBe('all');
+    expect(await controller.findOne('id')).toBe('one');
+    expect(await controller.update('id', {} as any)).toBe('updated');
+    expect(await controller.remove('id')).toBe('deleted');
   });
 });

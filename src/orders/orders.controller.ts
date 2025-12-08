@@ -6,6 +6,9 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
+  DefaultValuePipe,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { OrdersService } from './orders.service';
@@ -25,8 +28,11 @@ export class OrdersController {
 
   @Get()
   @ApiOperation({ summary: 'Lister les commandes' })
-  findAll() {
-    return this.ordersService.findAll();
+  findAll(
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
+  ) {
+    return this.ordersService.findAll(page, limit);
   }
 
   @Get(':id')

@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Req,
+} from '@nestjs/common';
+import type { Request } from 'express';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { PagesService } from './pages.service';
 import { CreatePageDto } from './dto/create-page.dto';
@@ -11,8 +21,10 @@ export class PagesController {
 
   @Post()
   @ApiOperation({ summary: 'Créer une page personnalisée' })
-  create(@Body() createPageDto: CreatePageDto) {
-    return this.pagesService.create(createPageDto);
+  create(@Body() createPageDto: CreatePageDto, @Req() req?: Request) {
+    const userId =
+      (req as (Request & { user?: { userId?: string } }) | undefined)?.user?.userId;
+    return this.pagesService.create(createPageDto, userId);
   }
 
   @Get()
@@ -35,13 +47,21 @@ export class PagesController {
 
   @Patch(':id')
   @ApiOperation({ summary: 'Mettre à jour une page personnalisée' })
-  update(@Param('id') id: string, @Body() updatePageDto: UpdatePageDto) {
-    return this.pagesService.update(id, updatePageDto);
+  update(
+    @Param('id') id: string,
+    @Body() updatePageDto: UpdatePageDto,
+    @Req() req?: Request,
+  ) {
+    const userId =
+      (req as (Request & { user?: { userId?: string } }) | undefined)?.user?.userId;
+    return this.pagesService.update(id, updatePageDto, userId);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Supprimer une page personnalisée' })
-  remove(@Param('id') id: string) {
-    return this.pagesService.remove(id);
+  remove(@Param('id') id: string, @Req() req?: Request) {
+    const userId =
+      (req as (Request & { user?: { userId?: string } }) | undefined)?.user?.userId;
+    return this.pagesService.remove(id, userId);
   }
 }

@@ -1,4 +1,4 @@
-import { OrderStatus, PaymentStatus, PrismaClient } from '@prisma/client';
+import { OrderStatus, PaymentStatus, PrismaClient, Prisma } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
@@ -274,6 +274,98 @@ async function createCustomPages() {
   });
 }
 
+type ExperimentEventName = 'exposure' | 'click' | 'add_to_cart' | 'purchase' | 'conversion';
+
+async function seedExperimentMetrics() {
+  const experimentId = 'pdp-reco-block';
+  const alreadySeeded = await prisma.aBMetric.count({ where: { experimentId } });
+
+  if (alreadySeeded > 0) {
+    console.log('ℹ️  AB testing data already present, skipping experiment metrics seed.');
+    return;
+  }
+
+  const variantDailyMetrics = [
+    {
+      variantName: 'standard',
+      daily: [
+        { exposures: 28, clicks: 6, addToCart: 3, purchases: 1, conversions: 2 },
+        { exposures: 24, clicks: 5, addToCart: 2, purchases: 1, conversions: 1 },
+        { exposures: 26, clicks: 7, addToCart: 3, purchases: 1, conversions: 2 },
+        { exposures: 22, clicks: 4, addToCart: 2, purchases: 1, conversions: 1 },
+        { exposures: 25, clicks: 5, addToCart: 2, purchases: 1, conversions: 1 },
+      ],
+    },
+    {
+      variantName: 'promo',
+      daily: [
+        { exposures: 30, clicks: 9, addToCart: 5, purchases: 2, conversions: 3 },
+        { exposures: 27, clicks: 8, addToCart: 4, purchases: 2, conversions: 2 },
+        { exposures: 29, clicks: 9, addToCart: 5, purchases: 2, conversions: 3 },
+        { exposures: 26, clicks: 7, addToCart: 4, purchases: 2, conversions: 2 },
+        { exposures: 28, clicks: 8, addToCart: 5, purchases: 2, conversions: 3 },
+      ],
+    },
+  ] as const;
+
+  const abMetricRows: Prisma.ABMetricCreateManyInput[] = [];
+  const storefrontRows: Prisma.StorefrontMetricEventCreateManyInput[] = [];
+
+  const pushEvents = (
+    variantName: string,
+    baseDate: Date,
+    eventName: ExperimentEventName,
+    count: number,
+  ) => {
+    for (let idx = 0; idx < count; idx += 1) {
+      const occurredAt = new Date(baseDate.getTime() + idx * 5 * 60 * 1000);
+      const visitorId = `visitor-${variantName}-${baseDate.getTime()}-${eventName}-${idx}`;
+      const sessionId = `session-${variantName}-${baseDate.getTime()}-${eventName}-${idx}`;
+
+      abMetricRows.push({
+        experimentId,
+        variantName,
+        eventName,
+        visitorId,
+        createdAt: occurredAt,
+      });
+
+      storefrontRows.push({
+        name: `experiment.${eventName}`,
+        source: 'experiment',
+        visitorId,
+        sessionId,
+        payload: {
+          experimentId,
+          variantName,
+          eventName,
+        } as Prisma.InputJsonValue,
+        occurredAt,
+        createdAt: occurredAt,
+      });
+    }
+  };
+
+  variantDailyMetrics.forEach((variant) => {
+    variant.daily.forEach((metrics, dayIndex) => {
+      const baseDate = new Date();
+      baseDate.setUTCHours(11, 0, 0, 0);
+      baseDate.setUTCDate(baseDate.getUTCDate() - dayIndex);
+
+      pushEvents(variant.variantName, baseDate, 'exposure', metrics.exposures);
+      pushEvents(variant.variantName, baseDate, 'click', metrics.clicks);
+      pushEvents(variant.variantName, baseDate, 'add_to_cart', metrics.addToCart);
+      pushEvents(variant.variantName, baseDate, 'purchase', metrics.purchases);
+      pushEvents(variant.variantName, baseDate, 'conversion', metrics.conversions);
+    });
+  });
+
+  await prisma.aBMetric.createMany({ data: abMetricRows });
+  await prisma.storefrontMetricEvent.createMany({ data: storefrontRows });
+
+  console.log(`✅  Seeded ${abMetricRows.length} AB testing events for ${experimentId}.`);
+}
+
 async function main() {
   console.log('🌱  Seeding database...');
 
@@ -281,6 +373,7 @@ async function main() {
   const { smartSpeaker, smartLight } = await createCatalog();
   await createCustomersAndOrders([smartSpeaker.id, smartLight.id]);
   await createCustomPages();
+  await seedExperimentMetrics();
 
   console.log('✅  Seed complete. You can log in with admin@shopyverse.test / Admin123!');
 }

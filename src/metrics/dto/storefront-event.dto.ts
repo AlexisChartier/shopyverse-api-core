@@ -1,4 +1,10 @@
-import { IsDateString, IsIn, IsObject, IsOptional, IsString } from 'class-validator';
+import {
+  IsDateString,
+  IsIn,
+  IsObject,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export const STOREFRONT_EVENT_NAMES = [
   'filter.search',
@@ -8,8 +14,17 @@ export const STOREFRONT_EVENT_NAMES = [
   'cart.added',
   'cart.removed',
   'cart.updated',
+  'recommendation.view',
   'recommendation.click',
   'recommendation.add_to_cart',
+  'experiment.exposure',
+  'experiment.click',
+  'experiment.add_to_cart',
+  'experiment.purchase',
+  'experiment.conversion',
+  'chat.open',
+  'chat.send',
+  'chat.fallback',
 ] as const;
 
 export type StorefrontEventName = (typeof STOREFRONT_EVENT_NAMES)[number];
