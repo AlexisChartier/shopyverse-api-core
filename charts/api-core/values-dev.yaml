@@ -1,0 +1,34 @@
+image:
+  tag: "dev"
+
+ingress:
+  hosts:
+    - host: api-dev.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+rollout:
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+    argocd.argoproj.io/managed-by: argo-rollouts
+    argo-rollouts.argoproj.io/strategy: canary
+
+externalSecret:
+  secretStoreRef:
+    name: vault-backend
+    kind: ClusterSecretStore
+  remoteRefs:
+    databaseUrl:
+      key: api-core/dev/DATABASE_URL
+    jwtSecret:
+      key: api-core/dev/JWT_SECRET
+    recoServiceUrl:
+      key: api-core/dev/RECO_SERVICE_URL
+    logLevel:
+      key: api-core/dev/K8S_LOG_LEVEL
+    featureFlags:
+      key: api-core/dev/K8S_FEATURE_FLAGS
+    slackWebhook:
+      key: shared/SLACK_WEBHOOK

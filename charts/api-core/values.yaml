@@ -1,0 +1,101 @@
+replicaCount: 2
+
+image:
+  repository: ghcr.io/your-org/shopyverse-api-core
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 3001
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations: {}
+  hosts:
+    - host: api.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+env:
+  NODE_ENV: production
+  PORT: 3001
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 75
+
+resources:
+  requests:
+    cpu: 300m
+    memory: 512Mi
+  limits:
+    cpu: 800m
+    memory: 1Gi
+
+livenessProbe:
+  httpGet:
+    path: /health
+    port: 3001
+  initialDelaySeconds: 20
+  periodSeconds: 10
+readinessProbe:
+  httpGet:
+    path: /health
+    port: 3001
+  initialDelaySeconds: 10
+  periodSeconds: 10
+
+secrets:
+  existingSecret: api-core-secrets
+  # expected keys: DATABASE_URL, JWT_SECRET, RECO_SERVICE_URL, K8S_LOG_LEVEL, K8S_FEATURE_FLAGS, SLACK_WEBHOOK
+
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/path: /metrics
+  prometheus.io/port: "3001"
+
+serviceMonitor:
+  enabled: true
+  interval: 30s
+  scrapeTimeout: 10s
+
+alerts:
+  enabled: true
+  latencyP95Seconds: 0.8
+  errorRateThreshold: 0.02
+  cpuSaturation: 0.8
+  memorySaturation: 0.8
+
+rollout:
+  strategy: RollingUpdate # canary/blue-green handled by Argo Rollouts annotations below
+  annotations: {}
+
+nodeSelector: {}
+
+tolerations: []
+affinity: {}
+
+externalSecret:
+  enabled: true
+  secretStoreRef:
+    name: vault-backend
+    kind: ClusterSecretStore
+  remoteRefs:
+    databaseUrl:
+      key: api-core/DATABASE_URL
+    jwtSecret:
+      key: api-core/JWT_SECRET
+    recoServiceUrl:
+      key: api-core/RECO_SERVICE_URL
+    logLevel:
+      key: api-core/K8S_LOG_LEVEL
+    featureFlags:
+      key: api-core/K8S_FEATURE_FLAGS
+    slackWebhook:
+      key: shared/SLACK_WEBHOOK

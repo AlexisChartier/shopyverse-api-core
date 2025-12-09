@@ -1,0 +1,254 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String     @id @default(uuid())
+  email     String     @unique
+  password  String
+  firstName String
+  lastName  String
+  createdAt DateTime   @default(now())
+  roleId    String
+  audits    AuditLog[]
+  role      Role       @relation(fields: [roleId], references: [id])
+}
+
+model Role {
+  id    String @id @default(uuid())
+  name  String @unique
+  users User[]
+}
+
+model Category {
+  id       String     @id @default(uuid())
+  name     String
+  parentId String?
+  parent   Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryHierarchy")
+  products Product[]
+}
+
+model CustomPage {
+  id          String        @id @default(uuid())
+  name        String
+  slug        String        @unique
+  isInMenu    Boolean       @default(false)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  description String?
+  isPublished Boolean       @default(false)
+  theme       String?
+  sections    PageSection[]
+}
+
+model PageSection {
+  id         String     @id @default(uuid())
+  type       String
+  content    String?
+  level      Int?
+  productId  String?
+  productIds Json?
+  imageUrl   String?
+  height     Int?
+  sortOrder  Int        @default(0)
+  pageId     String
+  page       CustomPage @relation(fields: [pageId], references: [id])
+}
+
+model Product {
+  id          String             @id @default(uuid())
+  title       String
+  description String
+  slug        String             @unique
+  metaTitle   String?
+  metaDescription String?
+  metaKeywords String?
+  ogImage     String?
+  isPublished Boolean            @default(false)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  categoryId  String
+  medias      Media[]
+  orderItems  OrderItem[]
+  category    Category           @relation(fields: [categoryId], references: [id])
+  promotions  ProductPromotion[]
+  variants    Variant[]
+}
+
+model Variant {
+  id             String  @id @default(uuid())
+  sku            String  @unique
+  attributes     Json
+  price          Decimal
+  stockQty       Int     @default(0)
+  alertThreshold Int     @default(5)
+  productId      String
+  product        Product @relation(fields: [productId], references: [id])
+}
+
+model Media {
+  id        String  @id @default(uuid())
+  url       String
+  altText   String?
+  sortOrder Int     @default(0)
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+}
+
+model Customer {
+  id        String   @id @default(uuid())
+  firstName String
+  lastName  String
+  email     String   @unique
+  phone     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  orders    Order[]
+}
+
+model Order {
+  id              String        @id @default(uuid())
+  orderNumber     String        @unique
+  status          OrderStatus   @default(PENDING)
+  paymentStatus   PaymentStatus @default(PAID)
+  subtotal        Decimal       @default(0)
+  tax             Decimal       @default(0)
+  shipping        Decimal       @default(0)
+  total           Decimal       @default(0)
+  shippingAddress Json
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  customerId      String
+  customer        Customer      @relation(fields: [customerId], references: [id])
+  items           OrderItem[]
+}
+
+model OrderItem {
+  id          String   @id @default(uuid())
+  productId   String?
+  productName String
+  quantity    Int
+  unitPrice   Decimal
+  imageUrl    String?
+  orderId     String
+  order       Order    @relation(fields: [orderId], references: [id])
+  product     Product? @relation(fields: [productId], references: [id])
+}
+
+model Promotion {
+  id        String             @id @default(uuid())
+  code      String?            @unique
+  type      String
+  value     Decimal
+  startDate DateTime
+  endDate   DateTime
+  isActive  Boolean            @default(true)
+  minOrderValue Decimal?
+  products  ProductPromotion[]
+}
+
+model ProductPromotion {
+  productId   String
+  promotionId String
+  product     Product   @relation(fields: [productId], references: [id])
+  promotion   Promotion @relation(fields: [promotionId], references: [id])
+
+  @@id([productId, promotionId])
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  action    String
+  details   Json?
+  createdAt DateTime @default(now())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model ABMetric {
+  id           String   @id @default(uuid())
+  experimentId String
+  variantName  String
+  eventName    String
+  visitorId    String?
+  sessionId    String?
+  payload      Json?
+  createdAt    DateTime @default(now())
+}
+
+model CartSession {
+  id        String      @id @default(uuid())
+  sessionId String      @unique
+  currency  String      @default("EUR")
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  items     CartItem[]
+}
+
+model CartItem {
+  id        String      @id @default(uuid())
+  productId String
+  quantity  Int         @default(1)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  cartId    String
+  cart      CartSession @relation(fields: [cartId], references: [id], onDelete: Cascade)
+}
+
+model StorefrontMetricEvent {
+  id        String   @id @default(uuid())
+  name      String
+  source    String
+  visitorId String?
+  sessionId String?
+  payload   Json?
+  occurredAt DateTime @default(now())
+  createdAt DateTime @default(now())
+}
+
+model StoreSetting {
+  id                   String   @id @default("default")
+  currency             String   @default("EUR")
+  taxRate              Float    @default(20)
+  shippingRate         Float    @default(0)
+  allowedPaymentMethods String[] @default(["card", "paypal"])
+  emailNotifications   Boolean  @default(true)
+  orderPrefix          String   @default("ORD")
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+model ThemeSetting {
+  id               String   @id @default("default")
+  primaryColor     String   @default("#030213")
+  secondaryColor   String   @default("#6366f1")
+  accentColor      String   @default("#f59e0b")
+  fontFamily       String   @default("Inter")
+  logo             String?
+  storeName        String   @default("Ma Boutique")
+  storeDescription String   @default("Découvrez nos produits de qualité supérieure")
+  headerLayout     String   @default("centered")
+  footerText       String   @default("© 2024 Ma Boutique. Tous droits réservés.")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PAID
+  UNPAID
+  REFUNDED
+}

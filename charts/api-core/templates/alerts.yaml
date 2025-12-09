@@ -1,0 +1,40 @@
+{{- if .Values.alerts.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ include "api-core.fullname" . }}-alerts
+  labels:
+    release: prometheus-stack
+spec:
+  groups:
+    - name: api-core.sli
+      rules:
+        - alert: ApiCoreLatencyP95High
+          expr: histogram_quantile(0.95, sum(rate(api_core_http_request_duration_seconds_bucket{job="{{ include "api-core.fullname" . }}"}[5m])) by (le)) > {{ .Values.alerts.latencyP95Seconds }}
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "API Core p95 latency > {{ .Values.alerts.latencyP95Seconds }}s"
+        - alert: ApiCoreHighErrorRate
+          expr: sum(rate(api_core_http_requests_total{status=~"5..",job="{{ include "api-core.fullname" . }}"}[5m])) / sum(rate(api_core_http_requests_total{job="{{ include "api-core.fullname" . }}"}[5m])) > {{ .Values.alerts.errorRateThreshold }}
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "API Core 5xx error rate above threshold"
+        - alert: ApiCoreCpuSaturation
+          expr: sum(rate(container_cpu_usage_seconds_total{pod=~"{{ include "api-core.fullname" . }}.*",container!=""}[5m])) by (pod) > {{ .Values.alerts.cpuSaturation }}
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "API Core CPU saturation"
+        - alert: ApiCoreMemorySaturation
+          expr: sum(container_memory_working_set_bytes{pod=~"{{ include "api-core.fullname" . }}.*",container!=""}) by (pod) / sum(kube_pod_container_resource_limits_memory_bytes{pod=~"{{ include "api-core.fullname" . }}.*",container!=""}) by (pod) > {{ .Values.alerts.memorySaturation }}
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "API Core memory saturation"
+{{- end }}
